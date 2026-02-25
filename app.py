@@ -112,7 +112,7 @@ def dashboard():
 
     if session['role'] == 'admin':
         cur.execute("""SELECT lr.*,u.name,u.department FROM leave_requests lr
-                       JOIN users u ON lr.user_id=u.id ORDER BY lr.created_at DESC LIMIT 8""")
+                       JOIN users u ON lr.user_id=u.id ORDER BY lr.applied_on DESC LIMIT 8""")
         recent = cur.fetchall()
         cur.execute("SELECT COUNT(*) AS c FROM leave_requests WHERE status='pending'")
         pending_count = cur.fetchone()['c']
@@ -121,7 +121,7 @@ def dashboard():
         cur.execute("SELECT COUNT(*) AS c FROM leave_requests WHERE status='approved'")
         approved_count = cur.fetchone()['c']
     else:
-        cur.execute("SELECT * FROM leave_requests WHERE user_id=%s ORDER BY created_at DESC LIMIT 8", (uid,))
+        cur.execute("SELECT * FROM leave_requests WHERE user_id=%s ORDER BY applied_on DESC LIMIT 8", (uid,))
         recent = cur.fetchall()
         cur.execute("SELECT COUNT(*) AS c FROM leave_requests WHERE user_id=%s AND status='pending'", (uid,))
         pending_count = cur.fetchone()['c']
@@ -173,7 +173,7 @@ def apply_leave():
 @login_required
 def my_leaves():
     cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM leave_requests WHERE user_id=%s ORDER BY created_at DESC", (session['user_id'],))
+    cur.execute("SELECT * FROM leave_requests WHERE user_id=%s ORDER BY applied_on DESC", (session['user_id'],))
     leaves = cur.fetchall()
     cur.close()
     return render_template('my_leaves.html', leaves=leaves, leave_colors=LEAVE_COLORS)
@@ -202,11 +202,11 @@ def admin_leaves():
     cur = mysql.connection.cursor()
     if sf == 'all':
         cur.execute("""SELECT lr.*,u.name,u.department,u.email FROM leave_requests lr
-                       JOIN users u ON lr.user_id=u.id ORDER BY lr.created_at DESC""")
+                       JOIN users u ON lr.user_id=u.id ORDER BY lr.applied_on DESC""")
     else:
         cur.execute("""SELECT lr.*,u.name,u.department,u.email FROM leave_requests lr
                        JOIN users u ON lr.user_id=u.id
-                       WHERE lr.status=%s ORDER BY lr.created_at DESC""", (sf,))
+                       WHERE lr.status=%s ORDER BY lr.applied_on DESC""", (sf,))
     leaves = cur.fetchall()
     cur.close()
     return render_template('admin_leaves.html', leaves=leaves, status_filter=sf, leave_colors=LEAVE_COLORS)
@@ -252,7 +252,7 @@ def employee_detail(eid):
     emp = cur.fetchone()
     cur.execute("SELECT * FROM leave_balance WHERE user_id=%s", (eid,))
     balances = cur.fetchall()
-    cur.execute("SELECT * FROM leave_requests WHERE user_id=%s ORDER BY created_at DESC", (eid,))
+    cur.execute("SELECT * FROM leave_requests WHERE user_id=%s ORDER BY applied_on DESC", (eid,))
     leaves = cur.fetchall()
     cur.close()
     return render_template('employee_detail.html', emp=emp, balances=balances,
