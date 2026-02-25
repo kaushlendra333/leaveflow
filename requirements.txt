@@ -1,0 +1,5 @@
+flask==3.0.3
+flask-mysqldb==2.0.0
+werkzeug==3.0.3
+mysql-connector-python==9.0.0
+gunicorn==21.2.0

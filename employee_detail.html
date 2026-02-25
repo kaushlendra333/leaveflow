@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}{{ emp.name }} · LeaveFlow{% endblock %}
+{% block page_title %}Employee Detail{% endblock %}
+
+{% block content %}
+<div class="emp-layout">
+
+  <!-- Profile -->
+  <div class="emp-profile">
+    <div class="emp-av-lg">{{ emp.name[0].upper() }}</div>
+    <h2>{{ emp.name }}</h2>
+    <p class="em">{{ emp.email }}</p>
+    <span class="dept-badge">{{ emp.department }}</span>
+    <p class="since">
+      Member since {{ emp.created_at.strftime('%B %Y') if emp.created_at else 'N/A' }}
+    </p>
+    <a href="{{ url_for('admin_employees') }}"
+       class="btn btn-ghost btn-sm" style="margin-top:1.25rem;width:100%;justify-content:center">
+      &larr; Back
+    </a>
+  </div>
+
+  <!-- Detail -->
+  <div>
+    <div class="sec-hdr"><h2>Leave Balances</h2></div>
+    <div class="bal-grid" style="margin-bottom:1.75rem">
+      {% for b in balances %}
+      {% set pct = (b.used_days / b.total_days * 100) if b.total_days > 0 else 0 %}
+      {% set color = leave_colors.get(b.leave_type, '#6b7280') %}
+      <div class="bal-card">
+        <div class="bal-accent" style="background:{{ color }}"></div>
+        <div class="bal-type">{{ b.leave_type }}</div>
+        <div class="bal-nums">
+          <span class="bal-used">{{ b.used_days }}</span>
+          <span class="bal-sep"> / </span>
+          <span class="bal-total">{{ b.total_days }}</span>
+        </div>
+        <div class="bal-sub">used / total</div>
+        <div class="prog">
+          <div class="prog-fill" style="width:{{ pct }}%; background:{{ color }}"></div>
+        </div>
+        <form method="POST" action="{{ url_for('update_balance') }}" class="edit-bal-form">
+          <input type="hidden" name="user_id"    value="{{ emp.id }}">
+          <input type="hidden" name="leave_type" value="{{ b.leave_type }}">
+          <div class="edit-bal-row">
+            <input class="bal-input" type="number" name="total_days"
+                   value="{{ b.total_days }}" min="0" max="365">
+            <button type="submit" class="btn btn-xs btn-sage">Update</button>
+          </div>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="sec-hdr"><h2>Leave History</h2></div>
+    <div class="tbl-wrap">
+      {% if leaves %}
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Type</th><th>From</th><th>To</th>
+            <th>Days</th><th>Reason</th><th>Status</th><th>Applied</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for l in leaves %}
+          <tr>
+            <td><span class="badge badge-{{ l.leave_type|lower }}">{{ l.leave_type }}</span></td>
+            <td>{{ l.start_date }}</td>
+            <td>{{ l.end_date }}</td>
+            <td><strong>{{ l.days }}</strong></td>
+            <td class="td-reason" title="{{ l.reason }}">{{ l.reason }}</td>
+            <td><span class="badge badge-{{ l.status }}">{{ l.status|capitalize }}</span></td>
+            <td style="font-size:.8rem;color:var(--ink-60)">
+              {{ l.created_at.strftime('%d %b %Y') if l.created_at else '—' }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty">
+        <div class="empty-icon">📭</div>
+        <p>No leave history yet.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

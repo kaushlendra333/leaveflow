@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}Register · LeaveFlow{% endblock %}
+
+{% block auth %}
+<div class="auth-wrap">
+
+  <div class="auth-panel">
+    <div class="auth-inner">
+
+      <div class="auth-logo">
+        <div class="auth-logo-mark">🌿</div>
+        <span class="auth-logo-text">LeaveFlow</span>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}{% for cat, msg in messages %}
+      <div class="flash flash-{{ cat }}" style="margin-bottom:.75rem">
+        <span>{{ msg }}</span>
+      </div>
+      {% endfor %}{% endif %}
+      {% endwith %}
+
+      <h1 class="auth-heading">Create<br>account.</h1>
+      <p class="auth-sub">Join your team on LeaveFlow.</p>
+
+      <form method="POST" class="af">
+        <div class="fg-row">
+          <div class="fg">
+            <label>Full name</label>
+            <input type="text" name="name" placeholder="Jane Smith" required>
+          </div>
+          <div class="fg">
+            <label>Department</label>
+            <select name="department">
+              <option>Engineering</option>
+              <option>HR</option>
+              <option>Finance</option>
+              <option>Marketing</option>
+              <option>Operations</option>
+              <option>Sales</option>
+              <option>General</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg">
+          <label>Email address</label>
+          <input type="email" name="email" placeholder="you@company.com" required>
+        </div>
+        <div class="fg">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="Min 6 characters" required minlength="6">
+        </div>
+        <div class="fg">
+          <label>Account type</label>
+          <select name="role">
+            <option value="employee">Employee</option>
+            <option value="admin">Admin / HR</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" style="margin-top:.25rem">
+          Create Account &rarr;
+        </button>
+      </form>
+
+      <p class="auth-switch" style="margin-top:1.25rem">
+        Have an account? <a href="{{ url_for('login') }}">Sign in</a>
+      </p>
+
+    </div>
+  </div>
+
+  <div class="auth-visual">
+    <div class="av-tag">Getting started</div>
+    <h2 class="av-heading">Your leave,<br><em>your rules.</em></h2>
+    <p class="av-body">
+      Every new account gets a generous starting balance:<br><br>
+      🏖️ &nbsp;Annual — 15 days<br>
+      🏥 &nbsp;Sick — 10 days<br>
+      ☕ &nbsp;Casual — 7 days<br>
+      👶 &nbsp;Maternity — 90 days
+    </p>
+  </div>
+
+</div>
+{% endblock %}

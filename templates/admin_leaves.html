@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Leave Requests · LeaveFlow{% endblock %}
+{% block page_title %}Leave Requests{% endblock %}
+
+{% block content %}
+<div class="tabs" style="margin-bottom:1rem">
+  <a href="?status=pending"  class="tab {% if status_filter=='pending'  %}active{% endif %}">Pending</a>
+  <a href="?status=approved" class="tab {% if status_filter=='approved' %}active{% endif %}">Approved</a>
+  <a href="?status=rejected" class="tab {% if status_filter=='rejected' %}active{% endif %}">Rejected</a>
+  <a href="?status=all"      class="tab {% if status_filter=='all'      %}active{% endif %}">All</a>
+</div>
+
+<div class="tbl-wrap">
+  {% if leaves %}
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>Employee</th><th>Dept</th><th>Type</th>
+        <th>From</th><th>To</th><th>Days</th>
+        <th>Reason</th><th>Applied</th><th>Status</th><th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in leaves %}
+      <tr>
+        <td>
+          <strong>{{ l.name }}</strong><br>
+          <small class="text-muted">{{ l.email }}</small>
+        </td>
+        <td><span class="dept-badge">{{ l.department }}</span></td>
+        <td><span class="badge badge-{{ l.leave_type|lower }}">{{ l.leave_type }}</span></td>
+        <td>{{ l.start_date }}</td>
+        <td>{{ l.end_date }}</td>
+        <td><strong>{{ l.days }}</strong></td>
+        <td class="td-reason" title="{{ l.reason }}">{{ l.reason }}</td>
+        <td style="font-size:.8rem;color:var(--ink-60)">
+          {{ l.created_at.strftime('%d %b %Y') if l.created_at else '—' }}
+        </td>
+        <td><span class="badge badge-{{ l.status }}">{{ l.status|capitalize }}</span></td>
+        <td>
+          {% if l.status == 'pending' %}
+          <button class="btn btn-xs btn-sage"
+            onclick="openModal({{ l.id }},'{{ l.name }}','{{ l.leave_type }}',{{ l.days }})">
+            Review
+          </button>
+          {% else %}
+          {% if l.admin_comment %}
+          <span title="{{ l.admin_comment }}" style="cursor:help">💬</span>
+          {% else %}—{% endif %}
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">
+    <div class="empty-icon">🎉</div>
+    <p>No {{ status_filter }} requests found.</p>
+  </div>
+  {% endif %}
+</div>
+
+<div class="modal-ov" id="modal" style="display:none"
+     onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>Review Request</h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-info" id="modalInfo"></p>
+      <form method="POST" id="reviewForm">
+        <div class="fg">
+          <label>Comment (optional)</label>
+          <textarea name="comment" rows="3"
+                    placeholder="Add a note for the employee..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" name="action" value="reject" class="btn btn-danger">✗ Reject</button>
+          <button type="submit" name="action" value="approve" class="btn btn-sage">✓ Approve</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function openModal(id, name, type, days) {
+  document.getElementById('modalInfo').textContent =
+    `${name} has requested ${days} day(s) of ${type} leave.`;
+  document.getElementById('reviewForm').action = `/admin/action/${id}`;
+  document.getElementById('modal').style.display = 'flex';
+}
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+}
+</script>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Employees · LeaveFlow{% endblock %}
+{% block page_title %}Employee Directory{% endblock %}
+
+{% block content %}
+<div class="tbl-wrap">
+  <div class="search-wrap">
+    <input class="search-input" type="text"
+           placeholder="Search employees..." id="searchIn" oninput="doSearch()">
+  </div>
+
+  {% if employees %}
+  <table class="tbl" id="empTbl">
+    <thead>
+      <tr>
+        <th>#</th><th>Employee</th><th>Department</th>
+        <th>Total Days</th><th>Used</th><th>Remaining</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in employees %}
+      <tr>
+        <td class="text-muted">{{ loop.index }}</td>
+        <td>
+          <div class="emp-name-cell">
+            <div class="emp-av-sm">{{ e.name[0].upper() }}</div>
+            <div>
+              <strong>{{ e.name }}</strong><br>
+              <small class="text-muted">{{ e.email }}</small>
+            </div>
+          </div>
+        </td>
+        <td><span class="dept-badge">{{ e.department }}</span></td>
+        <td>{{ e.total_days }}</td>
+        <td>{{ e.used_days }}</td>
+        <td>
+          <strong class="{{ 'text-red' if (e.total_days - e.used_days) < 5 else 'text-sage' }}">
+            {{ e.total_days - e.used_days }}
+          </strong>
+        </td>
+        <td>
+          <a href="{{ url_for('employee_detail', eid=e.id) }}" class="btn btn-ghost btn-xs">
+            View &rarr;
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">
+    <div class="empty-icon">👥</div>
+    <p>No employees registered yet.</p>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function doSearch() {
+  const q = document.getElementById('searchIn').value.toLowerCase();
+  document.querySelectorAll('#empTbl tbody tr').forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

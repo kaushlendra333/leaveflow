@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard · LeaveFlow{% endblock %}
+{% block page_title %}
+  {% if session.role == 'admin' %}Admin Overview{% else %}My Dashboard{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<!-- Stat cards -->
+<div class="stat-grid">
+  {% if session.role == 'admin' %}
+  <div class="stat-card">
+    <span class="stat-icon">👥</span>
+    <div>
+      <div class="stat-val">{{ emp_count }}</div>
+      <div class="stat-lbl">Total Employees</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <span class="stat-icon">✅</span>
+    <div>
+      <div class="stat-val">{{ approved_count }}</div>
+      <div class="stat-lbl">Approved Leaves</div>
+    </div>
+  </div>
+  {% endif %}
+  <div class="stat-card">
+    <span class="stat-icon">⏳</span>
+    <div>
+      <div class="stat-val">{{ pending_count }}</div>
+      <div class="stat-lbl">Pending Requests</div>
+    </div>
+  </div>
+  {% for b in balances %}
+  <div class="stat-card">
+    <span class="stat-icon">
+      {% if b.leave_type == 'Annual' %}🏖️
+      {% elif b.leave_type == 'Sick' %}🏥
+      {% elif b.leave_type == 'Casual' %}☕
+      {% else %}👶{% endif %}
+    </span>
+    <div>
+      <div class="stat-val">{{ b.total_days - b.used_days }}</div>
+      <div class="stat-lbl">{{ b.leave_type }} Days Left</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Leave balance -->
+<div class="sec-hdr"><h2>Leave Balance</h2></div>
+<div class="bal-grid">
+  {% for b in balances %}
+  {% set pct = (b.used_days / b.total_days * 100) if b.total_days > 0 else 0 %}
+  {% set color = leave_colors.get(b.leave_type, '#6b7280') %}
+  <div class="bal-card">
+    <div class="bal-accent" style="background:{{ color }}"></div>
+    <div class="bal-type">{{ b.leave_type }} Leave</div>
+    <div class="bal-nums">
+      <span class="bal-used">{{ b.used_days }}</span>
+      <span class="bal-sep"> / </span>
+      <span class="bal-total">{{ b.total_days }}</span>
+    </div>
+    <div class="bal-sub">days used / total</div>
+    <div class="prog">
+      <div class="prog-fill" style="width:{{ pct }}%; background:{{ color }}"></div>
+    </div>
+    <div class="bal-rem">{{ b.total_days - b.used_days }} days remaining</div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Recent requests -->
+<div class="sec-hdr">
+  <h2>Recent Requests</h2>
+  {% if session.role == 'admin' %}
+  <a href="{{ url_for('admin_leaves') }}" class="btn btn-ghost btn-sm">View all</a>
+  {% else %}
+  <a href="{{ url_for('my_leaves') }}" class="btn btn-ghost btn-sm">View all</a>
+  {% endif %}
+</div>
+
+<div class="tbl-wrap">
+  {% if recent %}
+  <table class="tbl">
+    <thead>
+      <tr>
+        {% if session.role == 'admin' %}<th>Employee</th><th>Dept</th>{% endif %}
+        <th>Type</th><th>From</th><th>To</th><th>Days</th><th>Status</th>
+        {% if session.role == 'admin' %}<th>Action</th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in recent %}
+      <tr>
+        {% if session.role == 'admin' %}
+        <td><strong>{{ r.name }}</strong></td>
+        <td><span class="dept-badge">{{ r.department }}</span></td>
+        {% endif %}
+        <td><span class="badge badge-{{ r.leave_type|lower }}">{{ r.leave_type }}</span></td>
+        <td>{{ r.start_date }}</td>
+        <td>{{ r.end_date }}</td>
+        <td><strong>{{ r.days }}</strong></td>
+        <td><span class="badge badge-{{ r.status }}">{{ r.status|capitalize }}</span></td>
+        {% if session.role == 'admin' and r.status == 'pending' %}
+        <td><a href="{{ url_for('admin_leaves') }}" class="btn btn-xs btn-sage">Review</a></td>
+        {% elif session.role == 'admin' %}
+        <td class="text-muted">—</td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">
+    <div class="empty-icon">📭</div>
+    <p>No leave requests yet.</p>
+    {% if session.role == 'employee' %}
+    <a href="{{ url_for('apply_leave') }}" class="btn btn-sage btn-sm" style="margin-top:.5rem">Apply now</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

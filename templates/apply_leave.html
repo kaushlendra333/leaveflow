@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Apply Leave · LeaveFlow{% endblock %}
+{% block page_title %}Apply for Leave{% endblock %}
+
+{% block content %}
+<div class="apply-layout">
+
+  <div class="apply-card">
+    <h2>New Application</h2>
+    <p class="sub">Submit a leave request for review by your HR team.</p>
+
+    <form method="POST" class="apply-form">
+      <div class="fg">
+        <label>Leave Type</label>
+        <select name="leave_type" required>
+          <option value="">Select a leave type...</option>
+          <option value="Annual">🏖️ Annual Leave</option>
+          <option value="Sick">🏥 Sick Leave</option>
+          <option value="Casual">☕ Casual Leave</option>
+          <option value="Maternity">👶 Maternity Leave</option>
+        </select>
+      </div>
+
+      <div class="fg-row">
+        <div class="fg">
+          <label>Start Date</label>
+          <input type="date" name="start_date" id="startDate" required
+                 min="{{ today }}" onchange="calcDays()">
+        </div>
+        <div class="fg">
+          <label>End Date</label>
+          <input type="date" name="end_date" id="endDate" required
+                 min="{{ today }}" onchange="calcDays()">
+        </div>
+      </div>
+
+      <div class="days-pill" id="daysPill" style="display:none">
+        <span class="days-num" id="daysNum">0</span>
+        <span class="days-lbl">calendar days requested</span>
+      </div>
+
+      <div class="fg">
+        <label>Reason</label>
+        <textarea name="reason" rows="4"
+                  placeholder="Briefly explain the reason for your leave..." required></textarea>
+      </div>
+
+      <div class="form-actions">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary">Submit Application &rarr;</button>
+      </div>
+    </form>
+  </div>
+
+  <div>
+    <div class="info-card">
+      <h3>Your Balance</h3>
+      {% for lt, b in balances.items() %}
+      {% set avail = b.total_days - b.used_days %}
+      <div class="bal-row-sm">
+        <span>
+          {% if lt == 'Annual' %}🏖️
+          {% elif lt == 'Sick' %}🏥
+          {% elif lt == 'Casual' %}☕
+          {% else %}👶{% endif %}
+          &nbsp;{{ lt }}
+        </span>
+        <span class="{{ 'bal-days-ok' if avail > 3 else 'bal-days-low' }}">{{ avail }} days</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="info-card" style="margin-top:1rem">
+      <h3>💡 Tips</h3>
+      <ul class="tips-list">
+        <li>Apply at least 2 days in advance for planned leave.</li>
+        <li>Sick leave may require a medical certificate.</li>
+        <li>You cannot exceed your available balance.</li>
+        <li>Cancel pending requests anytime from My Leaves.</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function calcDays() {
+  const s = document.getElementById('startDate').value;
+  const e = document.getElementById('endDate').value;
+  const pill = document.getElementById('daysPill');
+  if (s && e) {
+    const days = Math.floor((new Date(e) - new Date(s)) / 86400000) + 1;
+    document.getElementById('daysNum').textContent = days > 0 ? days : 0;
+    pill.style.display = days > 0 ? 'flex' : 'none';
+    document.getElementById('endDate').min = s;
+  }
+}
+</script>
+{% endblock %}

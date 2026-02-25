@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}My Leaves · LeaveFlow{% endblock %}
+{% block page_title %}My Leave History{% endblock %}
+
+{% block content %}
+<div class="page-bar">
+  <div class="tabs">
+    <button class="tab active" onclick="filter('all',this)">All</button>
+    <button class="tab" onclick="filter('pending',this)">Pending</button>
+    <button class="tab" onclick="filter('approved',this)">Approved</button>
+    <button class="tab" onclick="filter('rejected',this)">Rejected</button>
+    <button class="tab" onclick="filter('cancelled',this)">Cancelled</button>
+  </div>
+  <a href="{{ url_for('apply_leave') }}" class="btn btn-sage btn-sm">+ Apply Leave</a>
+</div>
+
+<div class="tbl-wrap">
+  {% if leaves %}
+  <table class="tbl" id="leavesTbl">
+    <thead>
+      <tr>
+        <th>#</th><th>Type</th><th>From</th><th>To</th>
+        <th>Days</th><th>Reason</th><th>Status</th><th>Applied</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in leaves %}
+      <tr class="lr" data-status="{{ l.status }}">
+        <td class="text-muted">{{ loop.index }}</td>
+        <td><span class="badge badge-{{ l.leave_type|lower }}">{{ l.leave_type }}</span></td>
+        <td>{{ l.start_date }}</td>
+        <td>{{ l.end_date }}</td>
+        <td><strong>{{ l.days }}</strong></td>
+        <td class="td-reason" title="{{ l.reason }}">{{ l.reason }}</td>
+        <td><span class="badge badge-{{ l.status }}">{{ l.status|capitalize }}</span></td>
+        <td class="text-muted" style="font-size:.8rem">
+          {{ l.created_at.strftime('%d %b %Y') if l.created_at else '—' }}
+        </td>
+        <td>
+          {% if l.status == 'pending' %}
+          <form method="POST" action="{{ url_for('cancel_leave', lid=l.id) }}"
+                onsubmit="return confirm('Cancel this request?')">
+            <button type="submit" class="btn btn-xs btn-danger">Cancel</button>
+          </form>
+          {% else %}—{% endif %}
+        </td>
+      </tr>
+      {% if l.admin_comment %}
+      <tr class="lr" data-status="{{ l.status }}">
+        <td colspan="9" class="td-comment">
+          💬 <strong>Admin note:</strong> {{ l.admin_comment }}
+        </td>
+      </tr>
+      {% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">
+    <div class="empty-icon">📭</div>
+    <p>You haven't applied for any leave yet.</p>
+    <a href="{{ url_for('apply_leave') }}" class="btn btn-sage btn-sm" style="margin-top:.5rem">Apply now</a>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function filter(status, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.lr').forEach(r => {
+    r.style.display = (status === 'all' || r.dataset.status === status) ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

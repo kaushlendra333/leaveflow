@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}LeaveFlow{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+{% if session.user_id %}
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-mark">🌿</div>
+      <span class="sb-logo-text">LeaveFlow</span>
+    </div>
+
+    <nav class="sb-nav">
+      <span class="sb-section-label">Main</span>
+      <a href="{{ url_for('dashboard') }}"
+         class="sb-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+        <span class="sb-icon">⬡</span> Dashboard
+      </a>
+
+      {% if session.role == 'employee' %}
+      <span class="sb-section-label">Leave</span>
+      <a href="{{ url_for('apply_leave') }}"
+         class="sb-link {% if request.endpoint == 'apply_leave' %}active{% endif %}">
+        <span class="sb-icon">✦</span> Apply Leave
+      </a>
+      <a href="{{ url_for('my_leaves') }}"
+         class="sb-link {% if request.endpoint == 'my_leaves' %}active{% endif %}">
+        <span class="sb-icon">◈</span> My Leaves
+      </a>
+      {% endif %}
+
+      {% if session.role == 'admin' %}
+      <span class="sb-section-label">Admin</span>
+      <a href="{{ url_for('admin_leaves') }}"
+         class="sb-link {% if request.endpoint == 'admin_leaves' %}active{% endif %}">
+        <span class="sb-icon">✦</span> Leave Requests
+      </a>
+      <a href="{{ url_for('admin_employees') }}"
+         class="sb-link {% if request.endpoint in ['admin_employees','employee_detail'] %}active{% endif %}">
+        <span class="sb-icon">◈</span> Employees
+      </a>
+      {% endif %}
+    </nav>
+
+    <div class="sb-user">
+      <div class="sb-avatar">{{ session.name[0].upper() }}</div>
+      <div class="sb-user-info">
+        <span class="sb-user-name">{{ session.name }}</span>
+        <span class="sb-user-role">{{ session.role|capitalize }}</span>
+      </div>
+      <a href="{{ url_for('logout') }}" class="sb-logout" title="Logout">⇢</a>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <span class="topbar-title">{% block page_title %}Dashboard{% endblock %}</span>
+      <span class="topbar-date" id="topDate"></span>
+    </header>
+
+    <div class="content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="flashes">
+        {% for cat, msg in messages %}
+        <div class="flash flash-{{ cat }}">
+          <span>{{ msg }}</span>
+          <button class="flash-close" onclick="this.parentElement.remove()">×</button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+
+{% else %}
+{% block auth %}{% endblock %}
+{% endif %}
+
+<script>
+  const d = document.getElementById('topDate');
+  if (d) d.textContent = new Date().toLocaleDateString('en-US',
+    { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  setTimeout(() => document.querySelectorAll('.flash').forEach(f => f.remove()), 5000);
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

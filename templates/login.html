@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Sign In · LeaveFlow{% endblock %}
+
+{% block auth %}
+<div class="auth-wrap">
+
+  <div class="auth-panel">
+    <div class="auth-inner">
+
+      <div class="auth-logo">
+        <div class="auth-logo-mark">🌿</div>
+        <span class="auth-logo-text">LeaveFlow</span>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}{% for cat, msg in messages %}
+      <div class="flash flash-{{ cat }}" style="margin-bottom:.75rem">
+        <span>{{ msg }}</span>
+      </div>
+      {% endfor %}{% endif %}
+      {% endwith %}
+
+      <h1 class="auth-heading">Welcome<br>back.</h1>
+      <p class="auth-sub">Sign in to manage your leave requests.</p>
+
+      <form method="POST" class="af">
+        <div class="fg">
+          <label>Email address</label>
+          <input type="email" name="email" placeholder="you@company.com" required autocomplete="email">
+        </div>
+        <div class="fg">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" style="margin-top:.25rem">
+          Sign In &rarr;
+        </button>
+      </form>
+
+      <p class="auth-switch" style="margin-top:1.25rem">
+        No account? <a href="{{ url_for('register') }}">Create one</a>
+      </p>
+
+      <div class="demo-box">
+        <p><strong>Demo credentials</strong></p>
+        <p>Admin &nbsp;&nbsp;&rarr; admin@company.com / admin123</p>
+        <p>Employee &rarr; john@company.com / emp123</p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="auth-visual">
+    <div class="av-tag">Employee Leave Platform</div>
+    <h2 class="av-heading">Leave managed<br><em>beautifully.</em></h2>
+    <p class="av-body">
+      A refined workspace for employees and HR teams to handle
+      leave requests, approvals, and balance tracking.
+    </p>
+    <div class="av-stats">
+      <div>
+        <span class="av-stat-num">4</span>
+        <span class="av-stat-lbl">Leave types</span>
+      </div>
+      <div class="av-divider"></div>
+      <div>
+        <span class="av-stat-num">Real-time</span>
+        <span class="av-stat-lbl">Balance tracking</span>
+      </div>
+      <div class="av-divider"></div>
+      <div>
+        <span class="av-stat-num">1-click</span>
+        <span class="av-stat-lbl">Approvals</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
